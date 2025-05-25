@@ -10,20 +10,24 @@ jobs:
   lint-html:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Validate HTML files
-        uses: lukka/get-html-report@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          files: '**/*.html'
+          node-version: '18'
+
+      - name: Install html-validator-cli
+        run: npm install -g html-validator-cli
+
+      - name: Validate index.html
+        run: html-validator --file=index.html --verbose
 
   docker-build:
     runs-on: ubuntu-latest
     needs: lint-html
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Set image tag
         run: echo "BRANCH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
@@ -46,12 +50,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker-push
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./
+
 
